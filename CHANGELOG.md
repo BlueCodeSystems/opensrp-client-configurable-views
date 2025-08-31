@@ -10,4 +10,5 @@
 
 Breaking changes
 - Minimum build tooling updated (AGP 8.5 / Gradle 8.7). Consumer APIs remain unchanged.
-
+- Publishing group changed to `io.github.bluecodesystems`. New coordinates:
+  - `io.github.bluecodesystems:opensrp-configurable-views:1.2.0`

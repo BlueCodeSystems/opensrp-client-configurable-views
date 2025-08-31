@@ -30,7 +30,7 @@ project.ext.preDexLibs = !project.hasProperty('disablePreDex')
 
 subprojects {
 
-    group = 'org.smartregister'
+    group = GROUP
 
     ext.androidToolsBuildGradle = '8.5.0'
     ext.androidBuildToolsVersion = '34.0.0'
@@ -45,7 +45,6 @@ subprojects {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        maven { url "https://nexus.motechproject.org/content/repositories/drishti" }
         // Removed snapshots repository; all dependencies resolve from stable repos
         maven { url "https://repo.maven.apache.org/maven2" }
         maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
@@ -55,13 +54,12 @@ subprojects {
     // dexOptions has been removed as it's obsolete in newer Android Gradle Plugin versions
     // The Android Gradle plugin optimizes dexing automatically
 
-    // Workaround: Jetifier fails on Jackson 2.17+ MRJARs (class version 65).
-    // Pin Jackson to 2.16.1 which is Java 8 compatible and avoids MRJAR entries.
+    // Substitute legacy org.smartregister artifacts with io.github.bluecodesystems equivalents
     configurations.all {
-        resolutionStrategy {
-            force 'com.fasterxml.jackson.core:jackson-core:2.16.1'
-            force 'com.fasterxml.jackson.core:jackson-annotations:2.16.1'
-            force 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
+        resolutionStrategy.dependencySubstitution {
+            substitute module('org.smartregister:android-p2p-sync') using module('io.github.bluecodesystems:android-p2p-sync:0.4.1') because 'Use Maven Central coordinates'
+            substitute module('org.smartregister:opensrp-plan-evaluator') using module('io.github.bluecodesystems:opensrp-plan-evaluator:1.7.0') because 'Use Maven Central coordinates'
+            substitute module('org.smartregister:opensrp-client-core') using module('io.github.bluecodesystems:opensrp-client-core:6.2.0') because 'Use Maven Central coordinates'
         }
     }
 }
