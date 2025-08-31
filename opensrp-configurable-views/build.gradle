@@ -30,7 +30,7 @@ jacoco {
 }
 
 android {
-    namespace 'org.smartregister.configurableviews'
+    namespace 'io.github.bluecodesystems.configurableviews'
     compileSdkVersion androidCompileSdkVersion
     buildToolsVersion androidBuildToolsVersion
 

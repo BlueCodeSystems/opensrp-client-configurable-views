@@ -7,8 +7,10 @@
 - Deps: Switched to Maven Central `io.github.bluecodesystems:android-p2p-sync:0.4.1`.
 - Deps: Ensured `io.github.bluecodesystems:opensrp-plan-evaluator:1.7.0` and `opensrp-client-core:6.2.0` alignment.
 - Fix: Resolved Jetifier crash on Jackson MRJARs by pinning Jackson to 2.16.1 and excluding Jackson from Jetifier transforms.
+ - Publishing: Android `namespace` changed to `io.github.bluecodesystems.configurableviews` to align with group.
 
 Breaking changes
 - Minimum build tooling updated (AGP 8.5 / Gradle 8.7). Consumer APIs remain unchanged.
 - Publishing group changed to `io.github.bluecodesystems`. New coordinates:
   - `io.github.bluecodesystems:opensrp-configurable-views:1.2.0`
+ - Android resource package (`R`) moved under `io.github.bluecodesystems.configurableviews`.

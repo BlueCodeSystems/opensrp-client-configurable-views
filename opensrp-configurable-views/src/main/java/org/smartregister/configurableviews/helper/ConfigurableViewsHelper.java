@@ -10,7 +10,7 @@ import com.avocarrot.json2view.DynamicView;
 
 import org.json.JSONObject;
 import org.smartregister.configurableviews.ConfigurableViewsLibrary;
-import org.smartregister.configurableviews.R;
+import io.github.bluecodesystems.configurableviews.R;
 import org.smartregister.configurableviews.model.View;
 import org.smartregister.configurableviews.model.ViewConfiguration;
 import org.smartregister.configurableviews.repository.ConfigurableViewsRepository;
