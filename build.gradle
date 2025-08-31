@@ -1,10 +1,11 @@
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0"
+        // TODO: Add maven-publish plugin
+        // classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0"
     }
 }
 
@@ -16,15 +17,14 @@ configure(allprojects) { project ->
 
         repositories {
             google()
-            jcenter()
             mavenCentral()
-            maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
             mavenLocal()
         }
     }
 }
 
-apply plugin: 'io.codearte.nexus-staging'
+// TODO: Add maven-publish plugin
+// apply plugin: 'io.codearte.nexus-staging'
 
 project.ext.preDexLibs = !project.hasProperty('disablePreDex')
 
@@ -32,40 +32,36 @@ subprojects {
 
     group = 'org.smartregister'
 
-    ext.androidToolsBuildGradle = '3.1.2'
-    ext.androidBuildToolsVersion = '28.0.3'
-    ext.androidMinSdkVersion = 18
-    ext.androidCompileSdkVersion = 28
-    ext.androidTargetSdkVersion = 28
+    ext.androidToolsBuildGradle = '8.5.0'
+    ext.androidBuildToolsVersion = '34.0.0'
+    ext.androidMinSdkVersion = 21
+    ext.androidCompileSdkVersion = 34
+    ext.androidTargetSdkVersion = 34
 
     ext.androidAnnotationsVersion = '3.0.1'
     ext.androidAnnotationsAPIVersion = '3.0.1'
 
     repositories {
         google()
-        jcenter()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        maven { url "http://nexus.motechproject.org/content/repositories/drishti" }
-        maven { url "http://nexus.motechproject.org/content/repositories/snapshots" }
-        maven { url "http://acra.googlecode.com/svn/repository/releases" }
+        maven { url "https://nexus.motechproject.org/content/repositories/drishti" }
+        // Removed snapshots repository; all dependencies resolve from stable repos
         maven { url "https://repo.maven.apache.org/maven2" }
-        maven { url "http://cloudant.github.io/cloudant-sync-eap/repository" }
         maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
-        flatDir {
-            dirs 'libs'
-        }
-
         mavenLocal()
     }
 
-    // Improve build server performance by allowing disabling of pre-dexing
-    // (see http://tools.android.com/tech-docs/new-build-system/tips#TOC-Improving-Build-Server-performance.)
-    project.plugins.whenPluginAdded { plugin ->
-        if ("com.android.build.gradle.AppPlugin".equals(plugin.class.name)) {
-            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
-        } else if ("com.android.build.gradle.LibraryPlugin".equals(plugin.class.name)) {
-            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
+    // dexOptions has been removed as it's obsolete in newer Android Gradle Plugin versions
+    // The Android Gradle plugin optimizes dexing automatically
+
+    // Workaround: Jetifier fails on Jackson 2.17+ MRJARs (class version 65).
+    // Pin Jackson to 2.16.1 which is Java 8 compatible and avoids MRJAR entries.
+    configurations.all {
+        resolutionStrategy {
+            force 'com.fasterxml.jackson.core:jackson-core:2.16.1'
+            force 'com.fasterxml.jackson.core:jackson-annotations:2.16.1'
+            force 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
         }
     }
 }

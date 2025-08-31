@@ -1,1 +1,10 @@
-include ':sample', ':opensrp-configurable-views', ':json2view'
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+include ':sample', ':opensrp-configurable-views'

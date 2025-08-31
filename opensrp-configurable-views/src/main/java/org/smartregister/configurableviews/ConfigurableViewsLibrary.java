@@ -53,7 +53,8 @@ public class ConfigurableViewsLibrary {
     public String getPassword() {
         if (password == null) {
             String username = getContext().userService().getAllSharedPreferences().fetchRegisteredANM();
-            password = getContext().userService().getGroupId(username);
+            byte[] groupIdBytes = getContext().userService().getGroupId(username);
+            password = groupIdBytes != null ? new String(groupIdBytes) : null;
         }
         return password;
     }

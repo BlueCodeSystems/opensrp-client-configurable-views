@@ -3,7 +3,7 @@ description = 'OpenSRP Configurable Views client library'
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath "com.android.tools.build:gradle:" + androidToolsBuildGradle
@@ -13,27 +13,26 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        google()
+        mavenCentral()
         mavenLocal()
-        maven {
-            url 'https://maven.google.com'
-        }
     }
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'jacoco'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 jacoco {
-    toolVersion = "0.8.0"
+    toolVersion = "0.8.8"
 }
 
 android {
+    namespace 'org.smartregister.configurableviews'
     compileSdkVersion androidCompileSdkVersion
     buildToolsVersion androidBuildToolsVersion
-
-    defaultPublishConfig !isReleaseBuild() ? "debug" : "release"
 
     defaultConfig {
         minSdkVersion androidMinSdkVersion
@@ -41,7 +40,7 @@ android {
         versionCode Integer.parseInt(project.VERSION_CODE)
         versionName project.VERSION_NAME
         multiDexEnabled true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
     buildTypes {
@@ -55,13 +54,10 @@ android {
         }
     }
 
-    lintOptions {
+    lint {
         abortOnError false
     }
 
-    dexOptions {
-        javaMaxHeapSize "4g"
-    }
 
     packagingOptions {
         exclude 'LICENSE.txt'
@@ -76,25 +72,65 @@ android {
     testOptions {
        unitTests {
             includeAndroidResources = true
+            all {
+                jvmArgs '-Xmx1024m'
+                jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
+                jvmArgs '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED'
+                jvmArgs '--add-opens=java.base/java.io=ALL-UNNAMED'
+                jvmArgs '--add-opens=java.base/java.net=ALL-UNNAMED'
+                jvmArgs '--add-opens=java.base/java.util=ALL-UNNAMED'
+                jvmArgs '--add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED'
+                jvmArgs '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED'
+                jvmArgs '--add-opens=java.base/jdk.internal.util=ALL-UNNAMED'
+                jvmArgs '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
+                jvmArgs '--add-opens=java.base/sun.security.util=ALL-UNNAMED'
+                jvmArgs '--add-opens=java.desktop/java.awt.font=ALL-UNNAMED'
+                systemProperty 'robolectric.dependency.repo.url', 'https://repo1.maven.org/maven2'
+                forkEvery = 1
+                maxParallelForks = 1
+            }
          }
+    }
+}
+
+// Ensure sources and javadoc artifacts are created for Maven Central
+android {
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 }
 
 tasks.withType(Test) {
     jacoco.includeNoLocationClasses = true
+    jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
+    jvmArgs '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED'
+    jvmArgs '--add-opens=java.base/java.io=ALL-UNNAMED'
+    jvmArgs '--add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED'
+    jvmArgs '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED'
+    jvmArgs '--illegal-access=permit'
 }
 
 dependencies {
-    implementation('org.smartregister:opensrp-client-core:1.8.17-SNAPSHOT@aar') {
+    implementation('io.github.bluecodesystems:opensrp-client-core:6.2.0') {
         transitive = true
         exclude group: 'com.github.bmelnychuk', module: 'atv'
     }
 
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'io.github.bluecodesystems:opensrp-plan-evaluator:1.7.0'
+    implementation 'io.github.bluecodesystems:android-p2p-sync:0.4.1'
 
-    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'net.zetetic:android-database-sqlcipher:4.5.1'
+    implementation 'androidx.sqlite:sqlite:2.2.0'
 
-    implementation 'com.android.support:design:28.0.0'
+    implementation 'com.github.avocarrot:json2view:v1.0'
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+
+    implementation 'com.google.android.material:material:1.10.0'
 
     implementation 'com.google.code.gson:gson:2.8.2'
     testImplementation 'junit:junit:4.12'
@@ -108,45 +144,22 @@ dependencies {
     testImplementation "org.powermock:powermock-api-mockito2:$powerMockVersion"
     testImplementation "org.powermock:powermock-classloading-xstream:$powerMockVersion"
 
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.5.1', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 }
 
 
-Properties properties = new Properties()
-properties.load(project.rootProject.file('json2view/gradle.properties').newDataInputStream())
-
-task removeJson2ViewJar(type: Delete) {
-    delete fileTree('libs') {
-        include "${properties.getProperty('LIBRARY_NAME')}-*"
-    }
-}
-
-
-task checkJson2ViewLatest {
-
-    doLast {
-
-        if (!file("libs/${properties.getProperty('LIBRARY_NAME')}-${properties.getProperty('VERSION_NAME')}.jar").exists()) {
-            throw new GradleException("Error occurred : latest Json2View jar ${properties.getProperty('LIBRARY_NAME')}-${properties.getProperty('VERSION_NAME')}.jar is not present in the libs folder. \n" +
-                    "Please rerun uploadArchive task or make sure to always run the :json2View:createJson2ViewJar task first before :uploadArchives")
-        }
-    }
-
-}
-
-preBuild.dependsOn checkJson2ViewLatest
+// Json2View now uses external dependency from jitpack instead of local jar
 
 task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
 
     reports {
-        xml.enabled = true
-        html.enabled = true
+        xml.required = true
+        html.required = true
+        xml.outputLocation = file("${buildDir}/reports/jacoco/jacocoRootReport/merged.xml")
+        html.outputLocation = file("${buildDir}/reports/jacoco/jacocoRootReport/html")
     }
-
-    getReports().getXml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"))
-    getReports().getHtml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/html"))
 
     def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*', '**/*$ViewBinder*.*']
     def debugTree = fileTree(dir: "$project.buildDir/intermediates/classes/debug", excludes: fileFilter)
@@ -164,4 +177,99 @@ coveralls {
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"
 }
 
-apply from: '../maven.gradle'
+// Maven Central publication (local bundle + optional remote publish)
+afterEvaluate {
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                groupId = project.group
+                artifactId = 'opensrp-configurable-views'
+                version = project.VERSION_NAME
+                from components.release
+
+                pom {
+                    name = 'opensrp-configurable-views'
+                    description = project.findProperty('POM_SETTING_DESCRIPTION') ?: 'OpenSRP Client Configurable Views Library'
+                    url = project.findProperty('POM_SETTING_URL') ?: 'https://github.com/OpenSRP/opensrp-client-configurable-views'
+
+                    licenses {
+                        license {
+                            name = project.findProperty('POM_SETTING_LICENCE_NAME') ?: 'The Apache Software License, Version 2.0'
+                            url = project.findProperty('POM_SETTING_LICENCE_URL') ?: 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution = project.findProperty('POM_SETTING_LICENCE_DIST') ?: 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = project.findProperty('POM_SETTING_DEVELOPER_ID') ?: 'opensrp'
+                            name = project.findProperty('POM_SETTING_DEVELOPER_NAME') ?: 'OpenSRP'
+                        }
+                    }
+
+                    scm {
+                        url = project.findProperty('POM_SETTING_SCM_URL') ?: 'https://github.com/OpenSRP/opensrp-client-configurable-views'
+                        connection = project.findProperty('POM_SETTING_SCM_CONNECTION') ?: 'scm:git@github.com:OpenSRP/opensrp-client-configurable-views.git'
+                        developerConnection = project.findProperty('POM_SETTING_SCM_DEV_CONNECTION') ?: 'scm:git@github.com:OpenSRP/opensrp-client-configurable-views.git'
+                    }
+                }
+            }
+        }
+
+        // Local Central bundle repository (always available so related tasks exist)
+        repositories {
+            maven {
+                name = 'CentralBundle'
+                url = layout.buildDirectory.dir('central-bundle')
+            }
+        }
+    }
+
+    signing {
+        // Use system GPG if requested; otherwise support in-memory keys
+        if ((project.findProperty('useGpgCmd') ?: 'false').toString().toBoolean()) {
+            useGpgCmd()
+        } else if (project.hasProperty('signingKey') || project.hasProperty('signing.key')) {
+            def key = project.findProperty('signingKey') ?: project.findProperty('signing.key')
+            def pass = project.findProperty('signingPassword') ?: project.findProperty('signing.password')
+            useInMemoryPgpKeys(key as String, pass as String)
+        }
+        sign publishing.publications.maven
+    }
+
+    // Utilities for Central bundle: checksums, zip, and layout print
+    def centralGroup = project.group.toString().replace('.', '/')
+    def centralArtifactId = 'opensrp-configurable-views'
+    def centralVersion = project.VERSION_NAME
+    def centralBaseDir = layout.buildDirectory.dir("central-bundle/${centralGroup}/${centralArtifactId}/${centralVersion}").get().asFile
+
+    tasks.register('generateCentralBundleChecksums') {
+        group = 'publishing'
+        description = 'Generate MD5/SHA1/SHA256 checksums for Central bundle files.'
+        dependsOn tasks.named('publishMavenPublicationToCentralBundleRepository')
+        doLast {
+            if (!centralBaseDir.exists()) return
+            ant.checksum(fileext: '.md5', algorithm: 'MD5') { fileset(dir: centralBaseDir) { include(name: '**/*'); exclude(name: '**/*.md5'); exclude(name: '**/*.sha1'); exclude(name: '**/*.sha256') } }
+            ant.checksum(fileext: '.sha1', algorithm: 'SHA-1') { fileset(dir: centralBaseDir) { include(name: '**/*'); exclude(name: '**/*.md5'); exclude(name: '**/*.sha1'); exclude(name: '**/*.sha256') } }
+            ant.checksum(fileext: '.sha256', algorithm: 'SHA-256') { fileset(dir: centralBaseDir) { include(name: '**/*'); exclude(name: '**/*.md5'); exclude(name: '**/*.sha1'); exclude(name: '**/*.sha256') } }
+        }
+    }
+
+    tasks.register('zipCentralBundle', Zip) {
+        group = 'publishing'
+        description = 'Zip the Central bundle directory for manual upload.'
+        dependsOn tasks.named('generateCentralBundleChecksums')
+        from layout.buildDirectory.dir('central-bundle')
+        archiveFileName = "central-bundle-${centralArtifactId}-${centralVersion}.zip"
+        destinationDirectory = layout.buildDirectory.dir('distributions')
+    }
+
+    tasks.register('printCentralBundleLayout') {
+        group = 'publishing'
+        description = 'Prints the Central bundle path for this artifact.'
+        doLast {
+            println "Local repo: ${centralBaseDir.absolutePath}"
+            println "Zip will be at: ${layout.buildDirectory.dir('distributions').get().asFile}/central-bundle-${centralArtifactId}-${centralVersion}.zip"
+        }
+    }
+}
