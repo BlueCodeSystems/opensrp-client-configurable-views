@@ -1,6 +1,7 @@
 jdk:
   - openjdk17
 install:
-  - ./gradlew :opensrp-configurable-views:assembleRelease -x test --no-daemon --stacktrace
+  # Publish the Android library AAR + POM to Maven Local so JitPack can pick it up
+  - ./gradlew -PVERSION_NAME=$VERSION -PGROUP=io.github.bluecodesystems :opensrp-configurable-views:publishMavenPublicationToMavenLocal -x test --no-daemon --stacktrace
 env:
   CI: true
