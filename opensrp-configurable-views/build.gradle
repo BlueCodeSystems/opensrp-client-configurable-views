@@ -230,15 +230,21 @@ afterEvaluate {
     }
 
     signing {
-        // Use system GPG if requested; otherwise support in-memory keys
-        if ((project.findProperty('useGpgCmd') ?: 'false').toString().toBoolean()) {
+        // Only configure signing when keys or gpg are provided
+        def useGpg = (project.findProperty('useGpgCmd') ?: 'false').toString().toBoolean()
+        def hasInMemoryKeys = project.hasProperty('signingKey') || project.hasProperty('signing.key')
+
+        if (useGpg) {
             useGpgCmd()
-        } else if (project.hasProperty('signingKey') || project.hasProperty('signing.key')) {
+        } else if (hasInMemoryKeys) {
             def key = project.findProperty('signingKey') ?: project.findProperty('signing.key')
             def pass = project.findProperty('signingPassword') ?: project.findProperty('signing.password')
             useInMemoryPgpKeys(key as String, pass as String)
         }
-        sign publishing.publications.maven
+
+        if (useGpg || hasInMemoryKeys) {
+            sign publishing.publications.maven
+        }
     }
 
     // Utilities for Central bundle: checksums, zip, and layout print
