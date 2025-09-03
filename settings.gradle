@@ -7,4 +7,20 @@ dependencyResolutionManagement {
     }
 }
 
-include ':sample', ':opensrp-configurable-views'
+// Always include the library module
+include ':opensrp-configurable-views'
+
+// Optionally include the sample app when explicitly requested
+// Enable by passing -PincludeSample=true or setting env var INCLUDE_SAMPLE=true
+def includeSample = false
+def prop = gradle.startParameter?.projectProperties?.get('includeSample')
+if (prop != null) {
+    includeSample = prop.toString().toBoolean()
+} else {
+    def env = System.getenv('INCLUDE_SAMPLE')
+    if (env != null) includeSample = env.toBoolean()
+}
+
+if (includeSample) {
+    include ':sample'
+}
