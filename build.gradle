@@ -34,7 +34,7 @@ subprojects {
 
     ext.androidToolsBuildGradle = '8.5.0'
     ext.androidBuildToolsVersion = '34.0.0'
-    ext.androidMinSdkVersion = 21
+    ext.androidMinSdkVersion = 28
     ext.androidCompileSdkVersion = 34
     ext.androidTargetSdkVersion = 34
 
@@ -54,12 +54,12 @@ subprojects {
     // dexOptions has been removed as it's obsolete in newer Android Gradle Plugin versions
     // The Android Gradle plugin optimizes dexing automatically
 
-    // Substitute legacy org.smartregister artifacts with io.github.bluecodesystems equivalents
+    // Substitute legacy org.smartregister artifacts with JitPack/BlueCodeSystems equivalents
     configurations.all {
         resolutionStrategy.dependencySubstitution {
             substitute module('org.smartregister:android-p2p-sync') using module('io.github.bluecodesystems:android-p2p-sync:0.4.1') because 'Use Maven Central coordinates'
             substitute module('org.smartregister:opensrp-plan-evaluator') using module('io.github.bluecodesystems:opensrp-plan-evaluator:1.7.0') because 'Use Maven Central coordinates'
-            substitute module('org.smartregister:opensrp-client-core') using module('io.github.bluecodesystems:opensrp-client-core:6.2.0') because 'Use Maven Central coordinates'
+            substitute module('org.smartregister:opensrp-client-core') using module('com.github.BlueCodeSystems:opensrp-client-core:v6.2.2') because 'Use JitPack coordinates for v6.2.2'
         }
     }
 }
