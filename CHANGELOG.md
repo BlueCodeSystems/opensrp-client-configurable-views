@@ -1,3 +1,12 @@
+## 2.0.1 — 2025-09-03
+
+Build & CI
+- JitPack now publishes the AAR and POM to Maven Local via `publishMavenPublicationToMavenLocal`, allowing JitPack to discover and serve artifacts reliably.
+- Signing is conditional: publications are only signed when GPG/in‑memory signing keys are configured. This avoids CI/JitPack failures due to missing keys while preserving signing for real releases.
+
+Notes
+- No runtime or API changes; safe patch release.
+
 ## 2.0.0 — 2025-09-03
 
 Breaking changes
