@@ -1,3 +1,22 @@
+## 2.0.0 — 2025-09-03
+
+Breaking changes
+- Raise `minSdkVersion` to 28 across the project. This removes support for API < 28 and allows dropping legacy multidex/desugaring setups.
+- Remove core library desugaring and legacy multidex configurations. Consumers targeting API 28+ and AGP 8+ do not require these.
+- Target SDK updated to 34.
+
+Dependencies
+- Switch `opensrp-client-core` resolution to JitPack coordinates: `com.github.BlueCodeSystems:opensrp-client-core:v6.2.2`.
+- Keep `io.github.bluecodesystems:opensrp-plan-evaluator:1.7.0` and `io.github.bluecodesystems:android-p2p-sync:0.4.1` alignment.
+
+Build & Tooling
+- Make the `:sample` module optional via `-PincludeSample=true` or `INCLUDE_SAMPLE=true`.
+- Require Java 17 toolchain and AGP 8.5+/Gradle 8.7.
+
+Migration notes
+- Bump your app `minSdk` to 28 or consume this library only in variants that target API 28+.
+- Remove manual multidex and core library desugaring setup in your app when consuming this version.
+
 ## 1.2.0 — 2025-08-31
 
 - New: Added Maven Central bundle publishing via `maven-publish` with tasks:
