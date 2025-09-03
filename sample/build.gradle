@@ -13,6 +13,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
         maven { url 'https://maven.google.com' }
         mavenLocal()
     }
@@ -30,7 +31,7 @@ android {
         targetSdkVersion androidTargetSdkVersion
         versionCode 1
         versionName "1.0"
-        multiDexEnabled true
+        // multidex not required (minSdk 28+)
         resValue "string", 'opensrp_url', '"https://tbreach-stage.smartregister.org/opensrp/"'
     }
     buildTypes {
@@ -61,7 +62,7 @@ android {
 
     dependencies {
 
-        implementation('io.github.bluecodesystems:opensrp-client-core:6.2.0') {
+        implementation('com.github.BlueCodeSystems:opensrp-client-core:v6.2.2') {
             transitive = true
             exclude group: 'com.github.bmelnychuk', module: 'atv'
         }

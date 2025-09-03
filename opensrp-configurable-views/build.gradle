@@ -15,6 +15,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
         mavenLocal()
     }
 }
@@ -34,9 +35,7 @@ android {
     compileSdkVersion androidCompileSdkVersion
     buildToolsVersion androidBuildToolsVersion
 
-    // Enable core library desugaring for Java 8+ APIs used by dependencies
     compileOptions {
-        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -46,7 +45,6 @@ android {
         targetSdkVersion androidTargetSdkVersion
         versionCode Integer.parseInt(project.VERSION_CODE)
         versionName project.VERSION_NAME
-        multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
@@ -121,9 +119,8 @@ tasks.withType(Test) {
 }
 
 dependencies {
-    // Core library desugaring for Java 8+ APIs on older Android devices
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
-    implementation('io.github.bluecodesystems:opensrp-client-core:6.2.0') {
+    // core library desugaring not required for minSdk 28+
+    implementation('com.github.BlueCodeSystems:opensrp-client-core:v6.2.2') {
         transitive = true
         exclude group: 'com.github.bmelnychuk', module: 'atv'
     }
@@ -144,7 +141,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.2'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:3.8'
-    testImplementation 'org.robolectric:shadows-multidex:3.8'
+    // Removed legacy Robolectric shadows; not needed at minSdk 28+
 
     // PowerMock
     def powerMockVersion = '1.7.3'
@@ -153,9 +150,7 @@ dependencies {
     testImplementation "org.powermock:powermock-api-mockito2:$powerMockVersion"
     testImplementation "org.powermock:powermock-classloading-xstream:$powerMockVersion"
 
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.5.1', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
 
 
